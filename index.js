@@ -55,6 +55,48 @@ app.post('/api/get-quize', async(req, res) =>{
     }
 });
 
+app.post('/api/capture-lead', async (req, res) => {
+    try {
+        const { email, quizResults, articleText } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ error: 'Email is required.' });
+        }
+
+        // 1. Store the lead (e.g., in a database or even a Google Sheet for a prototype)
+        console.log(`Lead Captured: ${email}`);
+        console.log('Quiz Results:', quizResults);
+
+        // 2. Use AI to generate a personalized follow-up email
+        const emailPrompt = `
+            A user with the email "${email}" just completed a quiz about an article on System Design.
+            Their quiz results are: ${JSON.stringify(quizResults)}.
+
+            Write a friendly and encouraging email to this user.
+            1.  Thank them for taking the quiz.
+            2.  Briefly comment on their performance (e.g., "Great job!" or "You're on the right track!").
+            3.  Provide a link to a (mock) free resource: 'https://scaler.com/system-design-cheatsheet'.
+            4.  Include a compelling call-to-action to sign up for our "System Design Masterclass" at 'https://scaler.com/system-design-masterclass'.
+
+            Keep the email concise and engaging.
+        `;
+        
+        const result = await model.generateContent(emailPrompt);
+        const response = await result.response;
+        const emailBody = response.text();
+
+        // 3. Send the email (for a prototype, you can just log it)
+        console.log('--- Generated Email ---');
+        console.log(emailBody);
+        
+        res.json({ success: true, message: 'Lead captured and email sent (simulated).' });
+
+    } catch (error) {
+        console.error('Error capturing lead:', error);
+        res.status(500).json({ error: 'Failed to capture lead.' });
+    }
+});
+
 app.listen(port,() =>{
     console.log(`Server is Runnig on PORT: ${port}`);
 });
