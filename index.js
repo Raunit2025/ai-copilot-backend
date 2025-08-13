@@ -1,3 +1,4 @@
+
 const express = require('express');
 const cors = require('cors');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
@@ -66,20 +67,23 @@ app.post('/api/generate-quiz', async (req, res) => {
 
 app.post('/api/capture-lead', async (req, res) => {
     try {
-        const { email } = req.body;
+        const { email, score, totalQuestions } = req.body;
 
         if (!email) {
             return res.status(400).json({ error: 'Email is required.' });
         }
 
-        console.log(`Lead Captured: ${email}`);
+        console.log(`Lead Captured: ${email}, Score: ${score}/${totalQuestions}`);
 
         const emailPrompt = `
-            Generate content for a follow-up email.
+            Generate content for a follow-up email for a user who scored ${score} out of ${totalQuestions} on a quiz about System Design.
             Your response MUST be ONLY a single, valid, minified JSON object string.
             Do NOT include any markdown like \`\`\`json, comments, or any other text.
             The JSON object must be structured exactly like this: {"subject":"...","body":"..."}.
-            The body should use \\n for new lines and include a link to 'https://www.scaler.com/topics/system-design/' and a call-to-action for 'https://www.scaler.com/events/system-design-masterclass/'.
+            The body should use \\n for new lines.
+            - If the score is high, congratulate the user and suggest they might be ready for an advanced masterclass.
+            - If the score is low, encourage them and provide a link to a foundational System Design article to help them improve.
+            - In either case, include a link to 'https://www.scaler.com/topics/system-design/' and a call-to-action for 'https://www.scaler.com/events/system-design-masterclass/'.
         `;
 
         const result = await model.generateContent(emailPrompt);
